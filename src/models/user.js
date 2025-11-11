@@ -21,6 +21,10 @@ module.exports = (sequelize, DataTypes) => {
         as: 'role',
       });
 
+      User.hasMany(models.Movie, {
+        foreignKey: 'created_by',
+        as: 'createdBy'
+      });
     }
   }
   User.init({

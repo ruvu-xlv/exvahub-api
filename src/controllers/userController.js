@@ -59,7 +59,7 @@ exports.getUserById = async (req, res) => {
             attributes: { exclude: ['password'] },
             include: {
                 association: 'role',
-                attributes: ['id', 'name']
+                attributes: ['name']
             }
         });
         if (!user) return response.error(res, 404, "User not found");
@@ -83,25 +83,18 @@ exports.createUser = async (req, res) => {
 
         // Jika role_id tidak provided, cari role 'user' di database
         if (!finalRoleId) {
-            const userRole = await Role.findOne({
-                where: { name: 'user' }
-            });
-
-            if (!userRole) {
-                return response.error(res, 500, "Default user role not found");
-            }
-
+            const userRole = await Role.findOne({ where: { name: 'user' } });
+            if (!userRole) return response.error(res, 500, "Default user role not found");
             finalRoleId = userRole.id;
         }
 
         // Validasi apakah role_id exists di database
         const roleExists = await Role.findByPk(finalRoleId);
-        if (!roleExists) {
-            return response.error(res, 400, "Invalid role_id");
-        }
+        if (!roleExists) return response.error(res, 400, "Invalid role_id");
 
         const hashedPassword = await hashPassword(password);
 
+        // Create user
         const newUser = await User.create({
             name,
             username,
@@ -110,10 +103,16 @@ exports.createUser = async (req, res) => {
             role_id: finalRoleId
         });
 
-        const userResponse = { ...newUser.toJSON() };
-        delete userResponse.password;
+        // Re-fetch user dengan role untuk response konsisten
+        const createdUser = await User.findByPk(newUser.id, {
+            attributes: { exclude: ['password','role_id'] },
+            include: {
+                association: 'role',
+                attributes: ['name']
+            }
+        });
 
-        response.success(res, 201, "User created successfully", userResponse);
+        response.success(res, 201, "User created successfully", createdUser);
     } catch (err) {
         if (err.name === 'SequelizeUniqueConstraintError') {
             return response.error(res, 400, "Email or username already exists");
@@ -140,11 +139,16 @@ exports.updateUser = async (req, res) => {
 
         await user.update(updateData);
 
-        // Remove password from response
-        const userResponse = { ...user.toJSON() };
-        delete userResponse.password;
+        // Re-fetch user with role for consistent response
+        const updatedUser = await User.findByPk(req.params.id, {
+            attributes: { exclude: ['password', 'role_id'] },
+            include: {
+                association: 'role',
+                attributes: ['name']
+            }
+        });
 
-        response.success(res, 200, "User updated successfully", userResponse);
+        response.success(res, 200, "User updated successfully", updatedUser);
     } catch (err) {
         if (err.name === 'SequelizeUniqueConstraintError') {
             return response.error(res, 400, "Email or username already exists");
