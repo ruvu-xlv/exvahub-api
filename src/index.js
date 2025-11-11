@@ -3,6 +3,7 @@ const cors = require("cors");
 const express = require("express");
 const routeLogger = require('./middlewares/routeLogger');
 const app = express();
+const startServer = require("./services/server");
 const PORT = process.env.PORT || 3000;
 
 // Import Routes
@@ -27,4 +28,4 @@ app.use("/api/users", userRoutes);
 // genre routes
 app.use("/api/genres", genreRoutes);
 
-app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
+startServer(app, PORT);
