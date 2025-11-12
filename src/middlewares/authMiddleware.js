@@ -1,7 +1,8 @@
 const jwt = require("jsonwebtoken");
+const { User } = require("../models");
 const response = require("../utils/responseHelper");
 
-const authMiddleware = (req, res, next) => {
+const authMiddleware = async (req, res, next) => {
   const token = req.header('Authorization')?.replace('Bearer ', '');
 
   if (!token) {
@@ -10,8 +11,12 @@ const authMiddleware = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
-    req.user = decoded;
-    next();
+
+    const user = await User.findByPk(decoded.userId);
+    if (!user) return response.error(res, 401, "User not found");
+
+    req.user = user; 
+    next();  
   } catch (error) {
     response.error(res, 400, "Invalid token.");
   }

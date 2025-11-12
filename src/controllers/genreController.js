@@ -58,8 +58,11 @@ exports.createGenre = async (req, res) => {
     try {
         const { name } = req.body;
 
-        if (!name) {
-            return response.error(res, 400, "Name is required and must be a string");
+        const requiredFields = { name };
+        for (const [key, value] of Object.entries(requiredFields)) {
+            if (!value) {
+                return response.error(res, 400, `${key.charAt(0).toUpperCase() + key.slice(1)} is required`);
+            }
         }
 
         const newGenre = await Genre.create({ name });

@@ -75,8 +75,11 @@ exports.createUser = async (req, res) => {
     try {
         const { name, username, email, password, role_id } = req.body;
 
-        if (!name || !username || !email || !password) {
-            return response.error(res, 400, "Name, username, email, and password are required");
+        const requiredFields = { name, username, email, password };
+        for (const [key, value] of Object.entries(requiredFields)) {
+            if (!value) {
+                return response.error(res, 400, `${key.charAt(0).toUpperCase() + key.slice(1)} is required`);
+            }
         }
 
         let finalRoleId = role_id;
@@ -105,7 +108,7 @@ exports.createUser = async (req, res) => {
 
         // Re-fetch user dengan role untuk response konsisten
         const createdUser = await User.findByPk(newUser.id, {
-            attributes: { exclude: ['password','role_id'] },
+            attributes: { exclude: ['password', 'role_id'] },
             include: {
                 association: 'role',
                 attributes: ['name']

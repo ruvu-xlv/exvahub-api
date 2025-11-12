@@ -37,6 +37,18 @@ module.exports = {
         createdAt: new Date(),
         updatedAt: new Date()
       },
+      {
+        title: 'Perfect World',
+        description: 'Perfect World Perfect World Perfect World Perfect World Perfect World Perfect World  Perfect World Perfect World Perfect World ',
+        year: '2024',
+        genre_id: '5',
+        thumbnail: 'ahdjabjdhbcjdsbacucbuwcbuwhbecuewc.png',
+        type: 'series',
+        created_by: '3',
+        status: 'published',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
     ], {});
   },
 
